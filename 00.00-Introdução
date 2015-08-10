@@ -1,0 +1,39 @@
+Introdução
+===========
+
+* Estrutura da disciplina
+    - Aprendizado teórico e prático do processo de construção de um
+      compilador.
+    - Cada aula abordará a teoria de uma faze desse processo e será
+      cobrado, para entrega no domingo seguinte, a implementaão do
+      módulo correspondente (em DUPLA)
+    - Cada módulo não será implementado do zero, mas haverá ferramentas
+      e código de acesso.
+
+* Livro
+    - Modern Compiler Implementation in Java (2ª edição)
+
+* Projeto
+    - Compilador em Java para um subconjunto de Java (MiniJava -
+      definida no livro)
+    - Java: de conhecimento de vocês e tende a facilitar o
+      desenvolvimento.
+
+* Avaliação
+    - 12 a 15 provinhas
+        - Uma por capítulo, sempre segunda no início da aula
+        - A prova será repetida no final da aula de quarta
+        - Nota na provinha é a média das duas (primeira com peso 2)
+            - MédiaProvinha = (ProvaSegunda * 2 ProvaQuarta)
+    - Prova final (3 horas, última quarta)
+    - Média de Provas: (Provinhas + PFinal)/2
+    - Trabalho (projeto):
+        - Várias fases (11 a 14) com diferentes pesos, sendo que a fase
+          11 (que junta todo o compilador) tem o peso maior.
+    - MF = se (MP ou MT < 5) = mínimo(MP, MT)
+           senão (2*MP + MT)/3
+
+* Exercícios
+    - Cada capítulo possui uma série de exercícios teóricos (estrelas
+      indicam nível de dificuldade)
+
