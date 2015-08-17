@@ -1,0 +1,59 @@
+Introdução à Análise Léxica
+============================
+
+* Módulos e interfaces
+    - Os compiladores, em geral, são divididos em vários pedaços,
+      cada um correspondendo a funções diferentes até a geração
+      do código.
+
+    - A primeira parte do compilador é a análise léxica, que é feita
+      separadamente para se aproveitar dos algoritmos eficientes
+      (lineares, dos autômatos finitos deterministicos) das gramáticas
+      regulares. Dessa fase, geram-se os 'tokens'.
+
+    - A segunda parte é o parser, que utiliza uma gramática livre de
+      contexto (cujos algoritmos são de tempo polinomial) para indicar a
+      estrutura da linguagem.
+
+    - Em seguida, vem a árvore sintática abstrata (AST), que limpa tudo
+      que é desnecessário para representar o programa.
+
+    - Algumas partes são ligadas à máquina alvo do compilador (seleção
+      de instruções e layout do frame - como o compilador aloca os
+      dados do programa na mmeória).
+
+    - As fases avançadas são todas feitas para tentar otimizar o código,
+      chegando (ao final) na tradução para o código de máquina.
+
+* Estruturas de dados para linguagems em forma de árvore
+    - Árvores como representações intermediárias do programa sendo
+      compilado. São uma forma otimizada de representar as linguagens
+      de programação.
+
+* Gramática -> Estrutura de dados
+    - Cada símbolo não terminal da gramática que representa a linguagem
+      é associado a uma classe abstrata, usando o padrão Interpreter
+      do GoF (Gang of Four).
+    - Em Java, é muito simples fazer essa tradução utilizando classes
+      abstratas para os símbolos não terminais e criando uma classe
+      concreta sobre cada produção da gramática.
+    - Para cada regra de produção uma classe contreta estende a classe
+      abstrata do símbolo do lado.
+
+* Motivação
+    - Por que implementar um compilador?
+    - Em cada fase temos conceitos importantes de comutação, úteis em
+      vários momentos.
+    - É uma oportunidade de juntar vários conceitos aprendidos durante o
+      curso (programação, engenharia de software, estruturas de dados,
+      arquiteutra de computadores, sistemas operacionais).
+    - Experiência na implementação de um projeto grande, que exige
+      modularização, boas interfaces e disciplinas.
+
+    - Aplicações de tecnologia de compiladores
+        - Implementação de lingaugens de programação de alto nível (sem
+          otimizações apropriadas, astrações, organizações em vários
+          métodos, etc., deixariam os programas muito lentos.
+        - Paralelização automática de código.
+        - Otimização do uso de hierarquia de memória.
+        - Projeto de arquitetura de compiladores.

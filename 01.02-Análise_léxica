@@ -1,0 +1,105 @@
+Análise léxica
+===============
+
+* Compilação (composta por duas fases)
+    - Análise
+        - Léxica: identificar as palavras de linguagem (tokens).
+        - Sintática: identificar as frases ou sentenças de linguagem.
+        - Semântica: associação de significados a partir de sentenças.
+    - Síntese
+        - Geração de código
+
+* Analisador léxica
+    - Recebe o programa fonte
+    - Passa para o analisador sintático os tokes, sem espaços,
+      comentários, etc.
+    - Tokens: palavras reservadas, variáveis (identificadores),
+      valores, pontuação.
+    - Não são tokens: espaços, tabulações, quebras de linha,
+      comentários, etc.
+
+* Exemplos de tipos de tokes
+    - identificadores       (letras e _)
+    - inteiros              (números simples com sinal)
+    - reais                 (números com potência ou vírgula)
+    - palavras reservadas   (um token para cada uma)
+    - pontuações            (vírgiula, operadores, parênteses, etc.)
+
+* Exemplo
+    - Trecho de programa fonte:
+        float match0(char *s)
+        {
+            if (!strncmp(s, "0.0", 3))
+                return 0.;
+        }
+
+    - Saída do analisador léxico:
+        FLOAT IF(match0) LPAREN CHAR STAR ID(s) RPAREN LBRACE IF
+        LPAREN BANG ID(strncmp) LPAREN IF(s) COMMA STRING(0.0)
+        COMMAN NUM(3) RPAREN RPAREN RETURN REAL(0.0) SEMI RPAREN
+
+* Análise léxica
+    - Como descrever os tokens de uma linguagem?
+    - Representação: expressões regulares
+    - Implementação do analisador léxico: autômatos finitos
+      determinísticos.
+
+* Expressões regulares
+    - Uma linguagem é um conjunto de cadeias, cada cadeoa sendo uma
+      sequência de símbolos do alfabeto dessa linguagem.
+
+    - Se `a` um símbolo do alfabeto, `a` é uma expresão regular (ED)
+    - Se M e N são duas ERs, então M | N é uma ER (união)
+    - Se M e N são duas ERs, então M . N é uma ER (concetenação)
+        - Simplificação: MN
+    - A string vazia (ε) representa nenhum caractere.
+    - Se M é uma ER, então o operador estrela de Kleene * representa
+      0 ou mais ocorrências de M.
+
+    - Regras de precedência (da maior para menor):
+        Estrela de Kleene, Concatenação, União
+
+    - Abreviações (extensão da notação):
+        R+       = RR*
+        R^k      = R...R (concatenação de k R's)
+        R?       = R | ε
+        [abc]    = a | b | c
+        [a-e]    = [abcde]
+        [a-eK-N] = [abcdeKLMN]
+        .        = qualquer caractere exceto quebra de linha
+        "blah"   = string literal
+
+        - A string literal é usada para representar os comandos
+          usados pela metalinguagem na linguagem.
+
+* Exemplo de ERs para tokens
+    if                                      IF
+    [a-z][a-z0-9]*                          ID
+    [0-9]+                                  NUMBER
+    ([0-9]+"."[0-9]*)|([0-9]*"."[0-9]+)     REAL
+
+* Regras
+    - Match mais longo: a cadeia continua sendo lida até alcançar
+      o match mais longo.
+        - Ex: a leitura da cadeia "if8" não para ao reconhecer "if" como
+          sendo o token IF, mas será reconhecida como um ID.
+    - Prioridade: para uma determinada cadeia mais longa, será
+      considerado o prieito token definido.
+        - Ex: a cadeia "if" será reconhecida como um token IF
+          se a definição dese token vier primeiro que a definição do
+          token ID.
+        - A regra de definição dos tokens é muito importante.
+
+* Autômatos finitos
+    - Definição formal (livro do sipser)
+    - Um autõmato finito é uma quintúpla (Q,Σ,δ,q0,F), onde:
+        1. Q é um conjunto finido conhecido como estados
+        2. Σ é um conjunto finito chamado o alfabeto
+        3. δ : Q x Σ → Q é  a função de transição
+        4. q0 é o estado inicial
+        5. F _SUBCONJUNTO_ Q é o conjunto de estados de aceitação.
+
+* Representação
+    - Autômatos finitos determinísticos podem ser representados
+      utilizando matrizes de transição entre estados e tokens.
+    - Reconhecendo o match mais longo.
