@@ -52,7 +52,7 @@ Análise léxica
     - Se M e N são duas ERs, então M | N é uma ER (união)
     - Se M e N são duas ERs, então M . N é uma ER (concetenação)
         - Simplificação: MN
-    - A string vazia (ε) representa nenhum caractere.
+    - A string vazia (ε) é uma ER
     - Se M é uma ER, então o operador estrela de Kleene * representa
       0 ou mais ocorrências de M.
 
@@ -96,8 +96,8 @@ Análise léxica
         1. Q é um conjunto finido conhecido como estados
         2. Σ é um conjunto finito chamado o alfabeto
         3. δ : Q x Σ → Q é  a função de transição
-        4. q0 é o estado inicial
-        5. F _SUBCONJUNTO_ Q é o conjunto de estados de aceitação.
+        4. q0 ∈ Q é o estado inicial
+        5. F ⊆ Q é o conjunto de estados de aceitação.
 
 * Representação
     - Autômatos finitos determinísticos podem ser representados
