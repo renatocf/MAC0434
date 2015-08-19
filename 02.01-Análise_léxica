@@ -1,0 +1,69 @@
+Análise Léxica
+===============
+
+* Em geral, quando criamos um autômato finito para descrever a
+  linguagem, associamos a cada estado final um rótulo representando uma
+  categoria de strings.
+
+* Os AFDs podem ser implementados utilizando uma tabela de transição
+  de estados x símbolos, com cada casela da matriz apontando para o
+  a linha do estado correspondente.
+    - Como, em geral, os grafos de AFDs são esparsos, essa representação
+      não é muito utilizada, porque ocupa muito memória.
+
+* Uma maneira alternativa de implementar é usando um switch-case,
+  em que cada estado tem um código associado a si.
+
+* Da teroria da computação para a prática de compladores
+    - Vimos exemplos de AFDs construídos cuidadosamente para cada um dos
+      tokens. Como podemos fazer esse processo de forma algorítmica?
+    - Os tokens podem ser mais facilmente descritos por expressões
+      regulares.
+    - Expressões regulares podem ser traduzidar em autômatos finitos não
+      determinísticos (AFNs).
+    - Os AFNs podem ser transformados em AFDs de forma algorítmica.
+
+* Autômatos Finitos Não Determinísticos (AFN)
+    - Um estado pode ter 0 ou mais transições (setas saindo) para cada
+      símbolo de Σ.
+    - Um estado pode ter setas rotuladas por ε (especialmente úteis
+      para transformar expressões regulares em autômatos).
+
+    - Um autõmato finito não determinístico é uma quintúpla
+      (Q,Σ,δ,q0,F), onde:
+        1. Q é um conjunto finido conhecido como estados
+        2. Σ é um conjunto finito chamado o alfabeto
+        3. δ : Q x Σ → P(Q) é a função de transição
+                       ^^^^- conjunto potência de Q
+        4. {q0} ⊆ Q é o estado inicial
+        5. F ⊆ Q é o conjunto de estados de aceitação.
+
+    - Ex:
+                    0,1                          0,1
+                    ..                           ..
+                    |^   1        0,ε        1   |^
+                -> (q1) --> (q2) ----> (q3) --> (q4)
+
+    - Para detectar se uma palavra é reconhecida pelo autômato,
+      precisamos testar (em paralelo) se todos os caminhos possíveis.
+      Isso é muito ineficiente.
+
+* AFNs para AFDs
+    - Em geral, na hora de utilizar os autômatos, gostaríamos de ter um
+      AFD, porque o seu algoritmo de reconhecimento é mais rápido.
+    - Entretanto, os AFNs são mais simples de criar e converter a partir
+      das expressões regulares.
+    - Existe um algoritmo para converter AFNs em AFDs. Ele se baseia
+      em observar todos os símbolos G
+
+* Minimização de AFDs
+    - O próximo passo é minimizar:
+        - Elominar de estados inacessíveis e inúteis
+        - Agrupamento e fusão de estados equivalentes.
+
+* Geradores de analisadores léxicos
+    - Felizmente, a tarefa ER → AFD é automatizável.
+    - Programas geradores de analisadores léxicos.
+    - Ex: JavaCC e SableCC geram código Java de analisadores léxicos
+          (e sisntáticos).
+    - Usaremos SableCC no projeto!
