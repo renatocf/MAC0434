@@ -1,0 +1,52 @@
+Análise sintática
+==================
+
+* Final de arquivo
+    - Usaremos o símbolo "$"
+    - Adicionaremos à gramática a produção: S' → S#$, e S' será
+      o novo símbolo inicial.
+
+* Análise sintática preditiva ou recursiva-descendente
+
+    - Boa notícia: analisadores sintáticos preditivos ou
+      recursivo-descendentes são simples de serem implementados:
+        - Uma função para cada símbolo não-terminal.
+        - Um 'switch' para cada produção.
+
+    - Má notícia: nem toda gramática admite um analisador sintático
+      recursivo-descendente.
+
+    - Para cada opção de produção de um mesmo não-terminal,
+      precisamos saber qual produção utilizando o primeiro símbolo
+      não-terminal dedutível a partir do programa.
+
+    - Para descobrir se uma gramática pode ter um analisador
+      recursivo-descendente, precisamos do conceito de FIRST, FOLLOW e
+      nullable.
+
+        - nullable(X) é verdadeiro se x puder deduzir ε
+        - FIRST(X) é o primeiro terminal que pode ser deduzido pela
+          produção X → γ.
+        - FOLLOW(X) é o primeiro terminal que pode ser deduzido pela
+          produção X → γ.
+
+    - Tabela de análise sintática preditiva
+        - Tabela contendo os símbolos não termiansi nas linhas e
+          símbolos terminais (T) nas colunas
+        - A produção X → γ é escrita na posição (X, T) se:
+            - T pertence a FIRST(γ), ou
+            - γ é nullable e T pertence a FOLLOW(X)
+        - Se cada entrada tiver no máximo uma produção, então é
+          possível, durante a análsie sintática, construir o parser
+          utilizando apenas 1 token nos switches.
+
+* Gramáticas LL(k)
+    - Gramáticas que podem ser analisadas porum algoritmo
+      recursivo-descendente como visto aqui (okhando apenas o próximo
+      token) são chamadas gramáticas LL(1)
+        - Left-to-right parse, leftmost derivation, 1 lookahead
+
+    - Gramáticas LL(k): generalização da tabela para sequências de 'k'
+      tokens.
+    - Gramáticas LL(i) são LL(i+1)
+    - Gramáticas ambíguas não são LL(k), ∀ k.

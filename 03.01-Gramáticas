@@ -1,0 +1,85 @@
+Gramáticas
+===========
+
+* Definição uma gamática G é uma quádrupla (V, Σ, S, P), onde:
+    - V é o conjunto de símbolos não-terminais (variáveis)
+    - Σ é o conjunto de símbolos terminais
+    - S é o símgolo inicial
+    - Ρ é o conjunto de produções da forma:
+        (Σ U V)* V (Σ U V)* → (Σ U V)*
+
+* Uma forma sentencial de uma gramátca G é qualqeur cadeia obtida pela
+* aplicação recorrente das seguintes regras:
+    - S(símbolo inicial de F) é uma forma sentencial
+    - Sejam αρβ uma forma sentencial de G e ρ → γ uma produção de G.
+      Então αγβ é também uma forma sentencial de G.
+
+                      (α,β,γ ∈ (Σ U V)* e ρ ∈ P)
+
+* Exemplo de formas sentenciais:
+    - S, 0S33, 00S3333, 00A3333
+    - 0S33 → 00S3333
+    - 0S33 →* 00A3333
+    - 0S33 →* 0S33
+
+* Derivações
+    - É possível que uma mesma cadeia possa ser obtida de mais de uma
+      maneira (mais de uma derivação)
+        - Deviração mais à esquerda (sempre o primeiro símbolo não
+          terminal da forma sentencial é substituído primeiro).
+        - Deviração mais à direita (sempre o último símbolo não
+          terminal da forma sentencial é substituído primeiro).
+
+* Gramáticas
+    - São dispositivos generativos (geram cadeias).
+    - Dada uma cadeia w, reconhecer se w ∈ L(G) é um pocesso chamado
+      de análise sintática.
+    - Dependendo das produções, a gramática pode ser mais fácil ou mais
+      difícil de ser reconhecida.
+
+* Hierarquia de Chomsky
+    - A hierarquia de Chomsky define linguagens matemáticas e
+      suas respectivas limitações. Cada uma tem associada a si um
+      diferente dispositivo / máquina de reconhecimento (autômatos).
+
+    - Hierarquia (α → β)
+        - Linguagens regulares
+            α ∈ (V U Σ)*, β ∈ (V U Σ)*
+        - Linguagens livres de contexto
+            α ∈ (V U Σ)*Σ(V U Σ)*, β ∈ (V U Σ)
+        - Linguagens sensíveis ao contexto
+            α ∈ V, β ∈ (V U Σ)
+        - Linguagens irrestritas
+            α ∈ V, β ∈ Σε, β ∈ V, β ∈ (VΣ ou ΣV)
+
+* Ambiguidade
+    - Uma cadeia w é derivada ambiguamente na gramática livre de
+      contexto G se ela tem duas ou mais derivaçẽosmais à esquerda
+      dirferentes. A framática G é ambígua se ela gera alguma cadeia
+      ambiguamente. Algumas gramáticas ambíguas podem ser contertidas
+      em não ambíguas
+    - Algumas linguagens são inerentemente ambíguas (só podem ser
+      descritas por gramáticas ambíguas)
+        - "Eu vi o menino com uma luneta"
+
+    - Ambiguidade é uma característica normalmente indesejável de
+      gramáticas de linguagens de programação, uma vez que não define
+      unicaamente a estrtura (a definição fica por conta do projetista
+      do compilador, o que pode tornar os programas não portáveis).
+    - Lingagens inerentemente ambíguas são inapropriadas para linguagens
+      de programação.
+    - O problema de identificar se uma GLC é ambígua é indecidível.
+
+* Expressões aritméticas sem ambiguidade
+    - Em geral, utilizamos 2 truques: precedência e associatividade.
+    - Isso não é trivial: por conta da representação de números inteiros
+      e de ponto flutuante no computador, a ordem é relevante para
+      termos erros ou não.
+
+    - Exemplo de gramática:
+        <EXPR>   → <EXPR> + <TERM> | <TERM>
+        <TERM>   → <TERM> x <FACTOR> | <FACTOR>
+        <FACTOR> → <EXPR> | a
+
+    - A precedências é feita pela ordem, e a associatividade pela forma
+      como as produções são escritas.
