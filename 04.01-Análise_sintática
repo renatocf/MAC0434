@@ -1,0 +1,132 @@
+Análise sintática
+==================
+
+* Vimos na aula anterior que a maneira mais trivial de pensar em criar
+  um parser é na forma recursiva-descendente: para cada produção, temos
+  uma função que a reconhece e chama (recursivamente) outras funções que
+  realizam a mesma ação. As linguagens reconhecíveis por um desses
+  parsers são chamados de LL(1) (Left-to-right parse, leftmost derivation,
+  k-symbol lookahead).
+
+* Essa abordagem, porém, é limitada: se cada produção não começar com um
+  token, e esse token não for diferente, temos uma ambiguidade que nos
+  IMPEDE de criar um parser recursivo-descendente (a linguagem não é LL).
+
+* Para formalizar esse conceito, definimos as funções FIRST e FOLLOW.
+  Qualquer linguagem que tenha duas derivações com mesmo símbolo à
+  direita cujos conjuntos FIRST tenham intersecção (ou tenham
+  intersecção com o FOLLOW da derivação, se ela for nullable), então a
+  linguagem não é LL(1).
+
+* Algoritmo para construção dos conjuntos:
+
+    For each terminal symbol Z, FIRST[Z] = {Z}.
+    for each production X → Y1 Y2 ... Yi-1 Yi Yi+1 ... Yj Yj+1 ... Yk
+    if Y1 ... Yk are all nullable (or k = 0)
+        then nullable[X] = true
+    for each i from 1 to k, each j from i+1 to k
+        if Y1 ... Yi-1 are all nullable (or if i=1)
+            then FIRST[X] = FIRST[X] U FIRST[Yi]
+        if Yi+1 ... Yk are all nullable (or if i=k)
+            then FOLLOW[Yi] = FOLLOW[Yi] U FOLLOW[X]
+        if Yi+1 ... Yj-a are all nullable (or if i=k)
+            then FOLLOW[Yi] = FOLLOW[Yi] U FOLLOW[Yj]
+
+    - Exemplo
+
+        Z → d       Y →     X → Y
+        Z → X Y Z   Y → c   X → a
+        
+           | nullable | FIRST | FOLLOW |
+       | X |   yes    |  a c  | a c d  |
+       | Y |   yes    |   c   | a c d  |
+       | Z |   no     | a c d |        |
+
+    - Com base nesses valores, temos uma TABELA DE TRANSIÇÂO, que nos
+      permite gerar uma parser recursivo descendente:
+
+                   |       a      |    b    |    d    |
+               | X | X → a, X → y |
+               | Y |     Y →      |
+               | Z |    Z → XYZ   |  Z→XYZ
+
+    - Se, por outro lado, tivermos uma entrada na tabela com duas
+      produções, é IMPOSSÍVEL construir um parser recursivo descendente
+      para a gramática.
+
+* Derivações à esquerda
+    
+    - Derivações à esquerda geram um problema nos parsers
+      recursivo-descendentes. Cada chamada recursiva na derivação
+      com recusrão à esquerda acabará produzindo um loop infinito, pois
+      o estado não mudará de um passo para outro.
+
+* Recuperação de erros
+    - Sair da análise a cada erro é ruim para o usuário.
+    - Necessidade de recuperação de erro para continuar a análise (e
+      potencialmente identificar outros erros).
+    - Possibilidades: inserir, deletar ou substituir tokens.
+
+    - Recuperação por inserção pode produzir eros em cascata,
+      podendo levar a um loop infinito.
+    - A recuperação por deleção é mais segura: em algum momento o
+      final do arquivo será alcançado.
+    - Deleção de tokens até encontrar um símbolo pertencente ao
+      FOLLOW do não-terminal sendo analisado.
+
+* Analisadores sintáticos LR(k)
+    - Analisadores LL(k) devem predizer qual produção usar olhando
+      apenas os 'k' próximos tokens.
+    - Analisadores LR(k), para decidir por qual produção usar, podem
+      esperar até que tenha olhado todos os tokens correspondentes ao
+      lado direito inteiro da produçõa em questão e mais 'k' tokens
+      adiante.
+
+    - Left-to-right parse, rightmost derivation, k-symbol lookahead
+
+    - Os analisadores LR(k) têm como estratégia "geral" tentar ir lendo
+      enquanto encontrar ambiguidades, para depois encaixar os símbolos
+      na regra.
+
+    - Itens necessários para o algoritmo
+        - Pilha
+        - Lookahead (k próximos tokens da entrada)
+
+    - Ações possíveis: 
+        - Shift: move o primeiro token da entrada para o topo da
+          pilha.
+        - Reduce: escolhe uma produção X → ABC, desempilha C, B, A, e
+          empilha X.
+
+    - Fazemos um AFD baseado no conteúdo da pilha para decidir qual ação
+      executar.
+    - Shift do $: implica que a entrada foir totalmente analisada com
+      sucesso.
+
+    - Ao invés do analisador ler a pilha toda a cada token, basta
+      aguardar o estado alcançado no AFD.
+
+    - Arestas: símbolos terminais e não-terminais da gramática.
+    - Elementos da tabela de transição P:
+        - sn: shift para o estado n
+            - Avança um token na entrada.
+            - Empilha estado n.
+        - gn: vai para o estado n (goto)
+        - rk: reduz (reduce) usando a regra k (X → U1...ym)
+            - desempilha M estados.
+            - empilha estado X.
+        - a: aceita
+
+    - Geração de analisador sintático LR(0)
+        - Criamos um grafo com estados representando as produções e a
+          posição atual, Por meio da operação CLOSURE e GOTO.
+        - A partir do grafo, monta-se uam tabela de transição com
+          estados x símbolos, com os comandos sn, gn, rk e a nos
+          cruzamentos.
+
+* Analisadores sintáticos SLR
+    - Os analisadores SLR espandem o conceito de LR(0) utilizando o
+      conjunto FOLLOW (definido para LL(k)) para tentar resolver as
+      ambiguidades não suportadas pelo parser LR(0). Entretanto, a nova
+      categoria de parsers LR(1) e LALR(1) terão poder de reconhecimento
+      ainda maior.
