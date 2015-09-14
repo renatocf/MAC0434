@@ -1,0 +1,142 @@
+Análise Semântica
+==================
+
+* Checagem de tipos
+    - Uma linguagem ter ou não ter tipagem é muito discutível.
+    - Assumiremos, para nossos compiladores, que uma linguagem é tipada.
+    - Se a linguagem for tipada, o código que um tipo ocupa na memória
+      é sempre conhecido. Isso faz com que elas possam ser
+      (potencialmente) mais rápidas, dado que linguagens de tipagem
+      dinâmica precisam de uma máquina virtual associada.
+
+* Primeiramente, para verificarmos tipos de variáveis, precisaremos de
+  uma TABELA DE SÍMBOLOS, que armazenará várias informações necessárias
+  para a compilação.
+
+* Objetivos
+    - Identificar o valor das variáveis
+    - Checagem de tipos nas expressões
+    - Tradução das AST's em uma representação mais simples que facilite
+      a geração de código.
+
+* Manutenção da tabela de símbolos
+    - Originalmente, a estrutura de dados associada a uma tabela de
+      símbolos é uma PILHA, porque a mudança de contexto se comporta
+      como uma pilha simples.
+    - Quando temos orientação a objetos, cada classe funciona como
+      uma pilha. Sobre essas pilhas, é necessário ter uma LISTA
+      de classes.
+    - A estrutura de pilha funciona bem se a análise for feita para se
+      jogar fora logo em seguida. Porém, se quisermos mantê-la, é
+      necessário fazer algo um pouco mais complexo.
+    - Para gerarmos essa PILHA DE AMBIENTES, precisaremos de um visitor
+      que construirá, em si, a tabela de símbolos.
+
+* Tabela de símbolos
+    - Associa identificador (variável ou função) ao seu tipo e valor
+    - Conceitos importantes relacionados:
+        - ESCOPO de uma variável: "pontos" do programa onde a variável é
+          visível.
+        - AMBIENTE: conjunto de ligações (bindings)
+            identificador → significado
+        - Ex: σ0 = { g → string, a → int }
+
+    - Implementação de "aumentar o escopo"
+        - Como implementar σ0 = σ1 + { ... }?
+        - Temos duas opções (que dependem do paradigma de linguagem de
+          programação):
+            1. Tabelas de símbolo imperativas:
+                - Uma úniva tabela de símbolos
+                - σ1 é ALTERADA para se tornar σ2 (σ1 não é acessível
+                  enquanto σ2 existir).
+                - Para retornar a σ1 é preciso DESFAZER as alterações.
+                - Necessidade de uma pilha para empilhar alterações
+                  feitas (símbolos adicionados) e desempilhá-las na
+                  hora de desfazê-las.
+            2. Tabelas de símbolo funcionais:
+                - A cada adição de símbolo uma nova tabela de símbolos
+                  é criada (ou seja, σ1 não é descartada para criar σ2).
+
+    - Um programa pode ter MUITOS símbolos, logo precisamos de uma
+      estrutura de dados eficiente para ela.
+
+    - Implementação eficiente de tabelas IMPERATIVAS
+        - Tabela de hash com encadeamento externo (conflitos formarm uma
+          lista ligada)
+        - Array de células, onde cada célula tem:
+            - id (string, usado como chave do hash)
+            - binding (Object, usado para armazenar qualquer conteúdo
+              desejado - na verificação de tipos, será apenas o tipo)
+            - next (referência para próxima célula na lista ligada
+              de conflitos de índice - mesmo id ou não)
+
+        - Adicionar um binding: inserção no início da lista ligada
+          (faz o papel da pilha).
+        - Desfazer um binding: deleção do início da lista ligada.
+
+        - Precisamos de uma pilha auxiliar, de ids + marcas de mudança
+          de escopo, para guardarmos qual a ordem em que os elementos
+          foram inseridos.
+
+    - Implementação eficiente de tabelas FUNCIONAIS
+        - Também podemos montar tabelas de hash.
+        - Para manter tabelas "intermediárias", precisaríamos criar uma
+          nova tabela de hash (cópia do array atual) a cada novo
+          binding.
+
+        - Por precisarmos criar e remover várias tabelas de hash
+          sucessivamente. Isso é muito ineficiente, pois cada nova
+          tabela precisa ser copiada.
+
+        - Podemos usar Árvores Binárias de Busca
+        - Cada célula tem:
+            - id (string, usado como chave)
+            - binding (Object, usado para armazenar o conteúdo de
+              interesse).
+            - filhos (que apontam para outras células da tabela)
+
+        - Copia-se apenas o caminho até o símbolo:
+
+                                .............................
+                      Dog | 3   :                 Dog | 3   :    
+                    /        \  :               /        '..'
+                bat | 1    Zebra | 4        bat | 1    
+                      \                           \
+                    Camel | 2                   Camel | 5
+
+        - Se a árvore estiver balanceada, a criaão de novas árvores e
+          acesso a um símbolo será O(lg(N)) para N nós.
+        - Utilizam-se árvores rubro-negras para manter a árvore
+          balanceada.
+
+* Símbolos
+    - Identificadores precisam ser comparados para encontrar seu lugar
+      na tabela.
+    - Comparação de strings é lento se comparado à comperação de
+      inteiros ou ponteiros.
+    - Solução: conversao string → símbolo, de tal forma que:
+        - comparar se dois símbolos são iguais deve ser rápido
+        - extrair do símbolo uma chave hash deve ser rápido (para caso
+          seja usada uma tabela hahs como tabela de mapeamento)
+        - compara se um sóbolo é maior que outro deve ser rápido (para
+          o caso de usarmos uma árvore binária de busca).
+    - Mapemaento string → símblo pode ser feito por uma tabela de hash,
+      mesmo usando uma tabela de símbolos funcional
+        - conflitos de mesma string mapeiam no mesmo símbolo
+
+* Checagem de tipos
+    - Lingaugens de programação tipadas estaticamente: tipos definidos e
+      checados durante a compilação.
+
+* Checagem de tipos do MiniJava
+    - Em Java (e MiniJava), podemos chamar um método que ainda será
+      definido mais para frente.
+    - Precisamos quebrar a chamada de função em duas partes:
+        - Criação da tabela de símbolos
+        - Checagem de tipos dos comandos e expressões
+
+* Tratamento de erro
+    - Se um erro de tipagem for encontrado, a checagem de erro deve
+      continar até o final (mas a compilação irá parar após o término
+      dessa fase).
+    - Para isso, temos ações de recuperação de erro.
