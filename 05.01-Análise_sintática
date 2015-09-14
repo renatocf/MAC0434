@@ -1,0 +1,77 @@
+Análise sintática
+==================
+
+* Tabela de análise sintátca prefitiva
+    - Tabela contendo os símbolos não termiais nas linhas e símbolos
+      terminais (T) nas colunas.
+    - A produção X → γ é escrita na posição (X,T) se:
+        T pertence a FIRST(γ), ou
+        γ é nullable e T pertence a FOLLOW(X). 
+
+* Gramáticas LL(k)
+    - Gramáticas que podem ser analisadas por um algoritmo
+      recursivo-descendente são chamadas gramáticas LL(1).
+        Left-to-right parse, Leftmost derivation, 1-symbol lookahead
+    - Gramáticas LL(k): generalização da tabela para sequências de
+      'k' tokens
+    - Gramáticas LL(i) são LL(i+1).
+    - Gramáticas ambíguas NÃO são LL(k), ∀k.
+
+* Gramáticas LL(1)
+    - Podemos transformar uma gramática não LL(1) em LL(1)?
+        Ás vezes sim!
+    - Técnicas:
+        - Eliminação de recursão à esquerda.
+        - Fatoração à esquerda.
+
+* Geração de analisador sintático LR(0)
+    - Utiliza as operações de 'Closure' e 'Goto' para criar conjuntos
+      que formam um autômato finito determinístico para o reconhecimento.
+    - A principal ideia é termos 'shifts' e 'reduces' - ir armazenando
+      os símbolos em uma pilha e ir colocando / retirando os elementos
+      para ver de onde retirar.
+
+* Gramáticas SLR(1)
+    - São uma simplificação do LR(0), que olha para o símbolo seguinte
+      à leitura e só permite reduções se esse símbolo estiver no follow
+      da redução.
+
+* Gramáticas LR(1)
+    - Mais poderoso que o SLR
+       - Construção similar ao LR(0), mas cada item também possui um
+         lookahead. Se o item tem uma produção A → α.β e um lookahead
+         'x', só permitiremos uma redução para A quando o próximo
+         símbolo for o 'x'.
+
+* Gramáticas LR(k)
+    - Semetlhante ao analisador sintático LR(1), só que considerando 
+      o lookahead, uma sequência de k símbolos.
+    - Consequências
+        - Tabela sintática maior.
+        - Menor chance de conflitos.
+        - Maior número de gramáticas LR(k).
+
+* Análise sintática LR de gramáticas ambíguas
+    - Existem vários conflitos que, tradicionalmente, ocorrem nas 
+      linguagens de programação. Por mais que possamos alterar a
+      gramática, às vezes isso torna mais difícil decidir qual o
+      real sentido.
+
+* Correção de erros
+    - O que ocorre, num parser LR(1), quando temos erros (vimos um
+      símbolo não aceitável?) Temos algumas opções.
+    - Inserção: Podemos tentar "colocar" um novo símbolo para ver
+      se ele geraria um parsing aceitável. Essa técnica, porém,
+      não é boa, porque pode produzir cada vez mais erros.
+    - Remoção: É possível consumir quantos símbolos tivermos, até
+      que geremos uma regra aceitável. Novamente, essa técnica pode
+      acabar gerando tantos erros quanto a outra. Usamos um token
+      especial 'error' para fazer esse processo.
+    - Busca por delimitador: os pontos de sincronização são
+      caracteres que podem ser usados como referência para parar
+      as remoções. Um bom pontos de sincronização é o ponto-e-vírgula,
+      que em muitas linguagens define que uma exptressão acabou.
+    - Análise de erro global: assumimos que o erro está agora ou
+      num passado recente. Mantemos a pilha de K símbolos anteriores
+      armazenada, e tentamos todas as substituições de símbolos
+      possíveis para ressincronizar.
