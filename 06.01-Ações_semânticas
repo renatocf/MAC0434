@@ -1,0 +1,60 @@
+Ações semânticas
+=================
+
+* Cada terminal ou não terminal pode estar associado a um valor
+  semântico
+    - Ex: NUM(5), ID(cont)
+    - Não seria mais simples usar apenas números? Sim, mas como queremos
+      construir depuradores, por exemplo, 
+
+* A aplicação de uma regra pode incluir a construçõa do valor semântivo
+  do símbolo do lado esquerdo a partir dos valores semânticos dos
+  símbolos do lado direito da regra:
+    - Ex: E → E + T
+  E deve recever a soma dos valores semânticos de E e T.
+  
+* Ações semânticas em um analisador recursivo descendente
+    - Ações semânticas são os valores retornados pelas funções do parser.
+
+* Uma linguagem recursivo-descendente, com recursão à esquerda, não fica
+  com um compilador muito bom: precisamos mudar a gramática para
+  eliminá-la (gerando uma gramática LL(1) menos clara) e a passagem de
+  valores semânticos fica pouco clara.
+
+* Por essa motivo, não vamos gerar código diretamente na análise
+  sintática, e nem vamos lidar diretamente com a análise semântica.
+
+* Nosso parser vai gerar uma Árvore Sintática Concreta (baseada na
+  linguagem que foi parseada) e numa Árvore Sintática Abstrata (baseada
+  numa linguagem mais simples e intuitiva), que será manipulada. Não
+  haverá ambiguidade na geração de código, porque a gramática original
+  era boa. A Árvore Concreta não chega a ser criada (ela "existe" pela
+  forma como a árvore concreta foi inventada). Para mudar a linguagem
+  parseada, só precisamos criar um novo parser e fazê-lo gerar uma AST.
+
+* Compiladores antigos faziam todo o processamento diretamente em uma
+  passada. Isso era vantajoso para gerar erros. Porém, compiladores
+  modernos geram a AST, e atuam em vários passos para a análise. As
+  folhas (tokens) passam a armazenar número de linha e outros metadados.
+
+* Temos três abordagens para implementar as ações semânticas:
+
+    - Orientada a objetos (usando métodos `eval`):
+        Cada classe contém métodos `eval` específicas para gerar o
+        código. Porém, para servir para várias arquiteturas,
+        precisaríamos de vários `eval` específicos. Adicionar uma nova
+        arquitetura implica adicionar esses métodos em vários locais.
+
+    - Funções de interpretação (usando `instanceof`):
+        Temos uma classe para cada arquitetura e eles fazem um
+        switch-case com `instanceof`. Perguntamos para a classe o seu 
+        tipo e tomamos ações específicas para cada classe. A desvantagem
+        é que se adicionarmos uma nova produção, precisamos adicionar um
+        novo case em cada classe.
+
+    - Visitor
+        O padrão visitor é a melhor alternativa. Ele desacopla a árvore
+        abstrata de sua interpretação, e usa o padrão "double dispatch"
+        + polimorfismo para que as classes 'visitor' executem ações sobre
+        a AST. Faremos vários visitors para fazer diversas passadas
+        sobre a AST, fazendo verificação de tipo, declarações, etc.
