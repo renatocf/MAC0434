@@ -1,0 +1,94 @@
+Registro de ativação
+=====================
+
+* Uso de registradores
+    - Mesmo quando hardware tem instruções memória/memória, uso de
+      registradores para cálculo é MUITO mais rápido.
+    - É comum sistemas de execução utilizarem registradores para contas,
+      em particular para valores intermediários.
+    - Problema: função 'f' e 'g' usam o mesmo registrador 'r'.
+    - Se 'f' chamar 'g', o valor do registrador 'r' deve ser armazenado
+      (no registro de ativação) e depois restaurado quando 'g' retornar.
+    - Quem deve fazer esse armazenamento/restauração? 'f' ou 'g'?
+        - 'f' se o registrador for 'caller-save'
+        - 'g' se o registrador for 'callee-save'
+
+* Passagem de parâmetros
+    - Parâmetros eram passados na pilha
+    - Estudos dos programas: poucas funções com mais de 4 parâmetros,
+      raras com mais de 6.
+    - Estratégia de algumas arquiteturas modernas: passar os 'k'
+      primeiros parâmetros (k=4 ou 6) em registradores → redução do
+      tráfego de memória.
+    - Se 'f' possui parâmetros n > k, a funçaõ 'g' que CHAMA 'f' deve
+      armazenar os parâmetros 'k+1', ..., 'n' no final de seu frame
+      (outgoing parameters para 'g' e incoming parameters para 'f').
+
+    - Se potencialmente 'f' precisará armazenar o argumento do
+      registrador para a pilha, qual a gvantagem de colocar primeiro nos
+      registradores?
+        - Alguams funçãos não chamam outras.
+        - Algumas otimizações (do compilador) analisam o rograma e
+          alocam de forma sábia conjuntos distintos de registradores
+          para cada função (alocação interprocedural de funções).
+
+    - O "caso C"
+        - Na linguagem C, há duas exigências:
+            - Deve ser possível acessar o endereço de um parâmetro
+            - Todos os parâmetros de uma função estão em endereços.
+            - 'printf' possui um número variável de parâmetros.
+        - Solução (padrão na maioria das máquinas modernas)
+            - Quando a função 'g' chama 'f', reserva espaços
+              consecutivos, no final de seu registro de aticação, para
+              todos os 'n' parâmetros.
+            - Os 'k' primeiros parâmetros são copiados em registradores
+              (mas não no registro de ativação) e os 'n-k' restantes em
+              seus espaços reservados no registro de ativação.
+            - 'f' (função chamada) passa algum parâmetro (de 1 a k) do
+              registrador para o registro de ativação de 'g' SE e QUANDO
+              PRECISAR.
+
+* Endereço de retorno
+    - Para qual posição (no programa) a execução deve voltar ao término
+      de uma função?
+    - Antes:
+        A instrução 'call' colocava o endereço de retorno na pilha.
+    - Atualmente:
+        - Instrução 'call' coloca o endereço de retorno em um registrador
+          pré-determinado.
+        - Se uma função for chamar outra, antes ela terá que salvar o
+          conteúdo desse registrador na pilha, e depois colocar o seu
+          endereço de retorno nela.
+
+* Variáveis residentes na pilha
+    - O que é armazenado nos registradores:
+        - Os 'k' primeiros parâmetros
+        - O endereço de retorno
+        - O valor de retorno
+        - Muitas variáveis locais
+
+    - O que é escrito na pilha (registro de ativação)
+        - O parâmetro será passaro por referência (ou se & for aplicado
+          a ela).
+        - A variável é acessada em uma função encaixada dentro da função
+          atual.
+        - O valor não cabe em um registrador.
+        - Arrays (aritmética de localização).
+        - Para usar registrador no qual a variável está.
+        - Excesso de variáveis locais e valores intermediários.
+
+* Uso de Registradores: arquitetura MiPS (usada no projeto)
+    - $sp (registrador 29): stack pointer
+    - $fp (registrador 30): frame pointer
+    - $ra (registrador 31): return address
+
+* Parâmetros residentes na pilha
+    - Quando um parâmetro de uma função "escapa" a uma função (isto é,
+      seu valor pode ser utilizado fora do contexto da função) devemos
+      salvar este valor no regstro de ativação.
+        - Fora do código da função registradores provavelmente já foram
+          utilizados.
+    - Assim, é necessário indicar, ao alocar uma função, quais
+      parâmetros "escapam"
+        - Estes devem obrigatoriamente ter também lugar no registro de
+          ativação.
