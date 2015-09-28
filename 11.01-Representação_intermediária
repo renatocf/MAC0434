@@ -1,0 +1,122 @@
+Representação intermediária
+============================
+
+* Representações intermediárias são como lingaugens abstratas de
+  máquina.
+    - Representam as operaçẽos de máquina sem entrar em detalhes
+      específicos de hardware.
+
+* Uso de linguagem intermediária permite modularizar compilador
+    - Front-end: análise léxica, análise sintática, análise semântica,
+      tradução para representação intermediária
+    - Back-end: otimização do código intermediário e tradução para
+      linguagem de máquina.
+    - Separar as duas fases permite redirecionar melhor as tarefas de
+      compilação e simplifica a construção de novos compiladores.
+
+* Alguns conceitos importantes
+    - r-value: indica um valor em tempo de execução
+    - l-value: resultado de uma expressão que PODE ocorrer do lado
+      esquerdo de uma atribuição, indica uma localização na memória.
+        - Em nosso compilador, um l-value pode ocorrer no lado direito
+          de uma atribuição, neste caso o valor daquela posição de
+          memória é utilizado *ou seja, assumimos conversão para um
+          r-value).
+    - Valor escalar: valor que pode ser armazenado em uma palavra de
+      memória e em um registrador.
+        - Indica valores que podem ser operados diretamente
+        - Este conceito depende da máquina (16 bits, 32 bits, 64 bits).
+
+* Projeto: pacote Tree
+    - Pacote Tree contém duas hierarquias de classe: expressão e comando
+        - Classe abstrata exp:
+            abstract class Exp
+            CONST(int value)
+            NAME(Label label)
+            TEMP(Temp.Temp temp)
+                /* uso de registrador virtual */
+            BINOP(int binop, Exp left, Exp right)
+            MEM(Exp exp)
+            CALL(Exo func, ExpList args)
+                /* separado de JUMP porque pode realizar mais ações
+                   que apenas saltar */
+            ESEQ(Stm stm, Exp exp)
+
+        - Classe abstrata stm:
+            abstract class Stm
+            MOVE(Exp dst, Exp src)
+            EXP(Ex exp)
+                /* Comando que tem expressão isolada, sem
+                   utilizar o resultado */
+            JUMP(Exp exp, Temp.LabelList targets)
+            CJUMP(int clop, Exp left, Exp right,
+                  Label iftrue, Label iffalse)
+            SEQ(Stm left, Stm right)
+            LABEL(Label label)
+
+        - Classes auxiliares
+            ExpList(Exp head, ExpList tail)
+            StmList(Stm head, StmList tail)
+
+        - Constantes
+            final static int BINOP.PLUS, BINOP.MINUS, BINOP.MUL,
+                             BINOP.DIV, BINOP.AND, FINOP.LSHIFT,
+                             BINOP.RSHIFT, BINOP.ARSHIFT, BINOP.XOR;
+            final static int CJUMP.EQ, CJUMP.NE, CJUMP.LT, CJUMP.GT,
+                             CJUMP.LE, CJUMP.GE, CJUMP.ULT, CJUMP.ULE,
+                             CJUMP.UGT, CJUMP.UGE;
+
+    - Significado dos operadores
+        - CONST (i): número inteiro constante i
+        - NAME (n): constante simbílica N
+        - TEMP (t): o temporário t. Um temporário na máquina
+          intermediária é semelhante a um registrador na máquina
+          real.
+        - BINOP(o, E1, E2): a aplicação do operador binário para os
+          operandos E1, E2:
+            - A subexpressão E1 é avaliada antes de E2
+            - operadores aritméticos inteiros:
+              PLUS, MINUS, MUL, DIV;
+            - os operadores lógicos bit a bit inteiros são
+              AND, OR, XOR
+            - operadores de deslocamento bit a bit: LSHIFT, RSHIFT
+            - operador deslocamento inteiro: ARSHIFT
+        - MEM(E): o conteúdo de uma palavra de mmeória começando no
+          endereço E. O tamanho da palavra é dado em bytes, definido
+          pela constatne wordsize no módulo Frame.
+        - CALL(f, l): uma chamada de procedimento: a aplicaão da
+          função f na lista de argumentos.
+
+    - Significado dos comandos
+        - MOVE(TEMP(t), e)
+            Avaliar a expressão e colocar o valor no temporário 't'.
+        - MOVE(MEM(e1), e2)
+            Avaliar a expressão e1, dando origem a un endereço 'a'.
+            Então calcula o valor de 'e2' e colocar a primeira
+            palavra do resultado (wordsize bytes) no endereço 'a'.
+        - EXP(e)
+            Avaliar a expressão 'e', descartando o resultado.
+        - JUMP(e, labels)
+            Transferir o controle (jump) para o endereço 'e'.
+            - O destino 'e' pode ser um literal com um rótulo
+              NAME(label)
+            - O destino pode ser um endereço (ex: switch)
+            - A lista de rótulos identifica os possíveis valores do
+              endereço 'e' (usado em análise do fluxo de dados).
+            - Rótulo, tal como no NAME (lbel)
+            - A lista de etiquetas especifica todos os possíveis
+              locais que a expressão 'e' pode avaliar 'a'; isto é
+              necessário apra a análise de fluxo de dados.
+
+    - Geração de código: mais um 'visitor'
+        - Teremos uma classe 'Translate' que implementa a interface de
+          'DepthFirstAdapter'
+        - Nesta classe tmeos os métodos de visita:
+            - void caseAIfStatement(AIfStatement ifst)
+            - void caseALessThenExpression(ALessThenExpression lessst)
+        - Cada um destes métodos irá acrescentar o código que é guardado
+          em uma variável interna de Translate, code_tree.
+        - Como percorremos a árvore no sentido da geração de código,
+          esta variável conterá sempre a sub-árvore gerada até o
+          momento.
+
