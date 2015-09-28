@@ -1,0 +1,73 @@
+Representação intermediária
+============================
+
+* Representações intermediárias são como linguagens abstratas de máquina
+    - Representam as operações de máquina sem entrar em detalhes
+      específicos de hardware.
+    - Uso de linguagem intermediária permite modularizar compilador
+        - Front-end: análise léxica, análsie sintática, análise
+          semântica, traduçaõ para representação intermediária.
+        - Back-end: otimização do código intermediário e tradução para a
+          linguagem de máquina.
+        - Separar as duas fases permite redirecionar melhor as tarefas
+          de compilação e simplifica a construção de novos compiladores.
+    
+    - Mesmo quanto temos um compilador apenas para uma lingaugem fonte e
+      uma máquina, o uso de uma representação intemediária simplifica a
+      cosntrução das partes do compilador.
+
+* Conceitos importantes
+    - r-value: valor que APENAS aparece do lado direito de uma
+      atribuição e indica um valor em tempo de execução.
+    - l-value: resultado de uma expressão que PODE ocorrer do lado
+      esquerdo de uma atribuição, indicando uma localização na memória.
+        - Em nosso compilador, um l-value pode ocorrer no lado direito
+          de uma atribuição, neste caso o valor daquela posição de
+          memória é utilizado (ou seja, assumimos conversão para um
+          r-value).
+    - Valor escalar: valor que pode ser armazenado em uma palavra de
+      memória e em um registrador.
+        - Indica valores que podem ser operados diretamente
+        - Este conceito depende da máquina (16 bits, 32 bits, 64 bits).
+
+* Projeto: pacote Tree
+    - Pacote Tree contém duas hierarquias de classe: expressão e comando
+        - Classe abstrata exp:
+            abstract class Exp
+            CONST(int value)
+            NAME(Label label)
+            TEMP(Temp.Temp temp) /* uso de registrador virtual */
+            BINOP(int binop, Exp left, Exp right)
+            MEM(Exp exp)
+            CALL(Exo func, ExpList args)
+            ESEQ(Stm stm, Exp exp)
+
+        - Classe abstrata stm
+            abstract class Stm
+            MOVE(Exp dst, Exp src)
+            EXP(Ex exp) /* Comando que tem expressão isolada, sem
+                           utilizar o resultado */
+            JUMP(Exp exp, Temp.LabelList targets)
+            CJUMP(int clop, Exp left, Exp right,
+                  Label iftrue, Label iffalse)
+            SEQ(Stm left, Stm right)
+            LABEL(Label label)
+
+        - Classes auxiliares
+            ExpList(Exp head, ExpList tail)
+            StmList(Stm head, StmList tail)
+
+        - Constantes
+            final static int BINOP.PLUS, BINOP.MINUS, BINOP.MUL,
+                             BINOP.DIV, BINOP.AND, FINOP.LSHIFT,
+                             BINOP.RSHIFT, BINOP.ARSHIFT, BINOP.XOR;
+            final static int CJUMP.EQ, CJUMP.NE, CJUMP.LT, CJUMP.GT,
+                             CJUMP.LE, CJUMP.GE, CJUMP.ULT, CJUMP.ULE,
+                             CJUMP.UGT, CJUMP.UGE;
+
+        - Significado dos operadores
+            - CONST (i) : número inteiro constante i
+            - NAME (n) : constante simbílica N
+            - TEMP (t) : o temporário t. Um temporário na máquina
+              intermediária é semelhante a um registrador na máquina
+              real.

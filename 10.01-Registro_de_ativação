@@ -1,0 +1,26 @@
+Registro de ativação
+=====================
+
+* Registros de ativação no compilador de Minijava
+    - Diferentes máquinas podem possuir diferentes layouts de registros
+      de ativação.
+
+    - A implentação deve registrar:
+        1. Para cada aticação, os parâmetros formais (formals) e os
+           reais (aturualls)
+            - Formais representam o logcal dos argumentos na ENTRADA da
+              função (visão do achamador).
+            - Reais representam o local onde a função guarda seus
+              valores (visão do chamado)
+        2, Instruções para emitir a "mudança de visão"
+            - Epaço alocdo locado localmente (variáveis locais e
+              temporários)
+        4. Label onde vai iniciar o código da função (veremos adiante).
+
+    - Temporários e labels
+        - Temposrários sã ouma abstração para os registradore, ou
+          "registradores vituais".
+            - Decidiremos se ele será colocado num registrador ou na
+              memória em tempo de compilação.
+        - Os "labels" ou "rótulos" são uma abstração para um endereço de
+          memória.
