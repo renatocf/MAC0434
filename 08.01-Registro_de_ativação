@@ -1,0 +1,94 @@
+Registro de ativação
+=====================
+
+* Variaveis locais e parâmetros de funções
+    - A tabela de símbolos nos permite consultar as definições de
+      variáveis
+        - Útil para eecutarmos uma checagem de tipos, o que é feito
+          durante o início da compilação.
+
+    - E como armazenar os VALORES das variáveis locais durante a
+      EXECUÇÃO dos programas?
+
+    - Para a EXECUÇÃO de um programa ser eficiente, precisamos gerar um
+      código que:
+        - Atribua uma localização (em algum tipo de memória) a cada
+          variável no momento de sua declaração.
+        - Quando uma variável for ser usada, sua ocalização seja usada
+          em seu lugar.
+
+    - Vamos armazenar a localização das variáveis na tabela de
+      símbolos, pois ela armazena as informações sobre todas as
+      variáveis.
+
+* Alguns cenários possíveis
+    - Parâmetros e variáveis locais podem ser destruídas quando saem
+      do escopo.
+        - Várias instâncias dos parâmetros e variáveis locais podem
+          existir em um determinado instante.
+
+        - Funções encaixadas / aninhadas (nested functions), escopos
+          encaixados (ex: Pascal).
+
+        - Classes encaixadas / aninhadas (nested classes), escopos
+          encaixados para as Inner Classes (ex: Java).
+
+        - Nestes casos, os parâmetros e variávies locais são
+          destruídos sob uma política LIFO (last-in, first-out).
+        - Uma estrutura de dados em forma de PILHA pode ser
+          utilizada para armazenamento.
+        - É o caso de linguagens de programação como Java, C e
+          Pascal.
+
+        - Funções encaixadas + função pode retornar outra função.
+
+* Cenário "adotado"
+    - Veremos aqui como tratar o coneário tratável com PILHA.
+    - Exemplso de lingaugens de programação
+        - Pasca possui funções / procedimentos encaixados, mas
+          uma função / procedimento não é um tipo de retorno.
+        - Java possui classes internas, mas função não é um tipo de
+          retorno.
+        - C possui função como um retorno válido, mas não possui
+          funções envaixadas.
+        - Minijava nem mesmo posui classes internas.
+
+* Como usar uma pilha para 
+    - Ao chamar uma nova função, o que precisamos armazenar?
+        - Valores dos argumentos
+        - Variáveis locais
+        - Endereço de retorno
+        - Temporários, por exemplo resultados intermediários de
+          cálculos de expressões.
+
+    - Registro de ativação (ou stack frame)
+        - Fabricante do computador geralmente recomenda um layout para o
+          registro de ativação → facilita que uma função escrita em uma
+          linguagem de programação chamve outra função escrita em outra
+          linguagem.
+
+    - Utilizamos o stack pointer (SP) para separar /a memória em duas
+      regiões: alocada (depois do SP de cima para baixo) e livre (antes
+      do SP de vima bara baixo).
+
+    - Valores usados na função "anterior" como argumentos para a chamada
+      da função atual está no frame "anterior" (oa função chamadora). A
+      separação entre os frames é feita pelo frame pointer (FP)
+
+* Passagem de parâmetros (o caso "C")
+    - Na linguagem C há duas exigências
+        - Deve ser possível acessar o endereço de um parâmetro
+        - Todos os parâmetros de uma função estão em endereços
+          consecutivos.
+        - 'printf' possui um número variável de parâmetros
+
+    - Solução (padrão na maioria das máquinas modernas)
+        - Quando a função 'g' chama 'f', reserva espaços consecutivos,
+          no final de seu registro de ativação, para todos os N
+          parâmetros.
+        - Os K primeiros parâmetros são copiados em registradores (mas
+          não no registro de ativação), e os N-Krestantes em seus
+          espaços reservados no registro de ativação.
+        - 'f' (função chamada) passa algum parâmetro (de 1 a K) do
+          registrador para o registro de ativação de 'g' SE e QUANDO
+          PRECISAR.
