@@ -1,0 +1,156 @@
+Alocação Registradores
+=======================
+
+* Coloração de grafos de interferência
+    - Se nossa arquitetura alvo possui K registradores, queremos colorir
+      o grafo de interferência com no máximo K cores distintas (na verdade,
+      o menor número possível de cores) de forma que:
+        - Cada cor corresponde a um registrador
+        - Dois nós conectados por uma aresta não possuam a mesma cor
+
+* Coloração por simplificação (heurístico)
+    - Os problemas de coloração de grafo e o de alocação de registradores
+      são NP-completos.
+    - Felizmente, há um algormot de tempo linear que dá uma solução
+      apxoimada, e na verdade bons resultados.
+    - Heurística: dado um grafo de interferência G, se um nó 'm' tem
+      menos que K vizinhos, se G\{m} puder ser K-colorido, então G
+      também pode.
+
+    - Quatro fases:
+        - Construção do grafo de interferência:
+          Via análise de fluxo
+
+        - Simplificação:
+          Aplicação da heurística para remoção de nós com < K vizinhos
+
+        - Transbordamento: 
+          Se durante a simplificação só restarem nós com grau >= K
+          (potencialmente transbordam), escolha um nó. Remova-o,
+          empilhe-o e continue a simplificaão (este será reanalisado
+          na fase seguinte, pode ser que não transborde de verdade
+          - visão otimista)
+
+        - Seleção:
+          Partindo do grafo vazio, desempilhe um nó e o recoloque no
+          grafo com uma cor apropriada (se possível). Se não for possível
+          (porque desempilhou um nó que realmente transborda), coloque-o
+          em uma lista de transbordo. Repita até esvaziar a pilha.
+
+        - Reinício:
+          Se houver nós na lista de transbordo, reescreva o programa
+          para armazenar tais temporários em memória após cada
+          definição e carregá-los da memória antes de cada uso.
+          Repita todo o algoritmo (cada temporário transbordado
+          será trocado por vários novos temporários de vida muito
+          curta, resultando em um novo grafo de interferência com
+          maior chance de ser colorido).
+
+    - Coalescência
+        - Em alguns casos - especialmente quando temos comandos MOVE,
+          podemos juntar dois nós por apenas um deles. Temos duas
+          heurísticas para fazer esse processo:
+
+            - Briggs: dois nós 'a' e 'b' são juntados apenas se o nó
+                      novo tiver < K elementos (o que significa que
+                      ele será simplificado). Caso contrário,
+                      ele não é juntado.
+
+            - George: dois nós 'a' e 'b' podem ser fundidos se para
+                      cada vizinho 't' de 'a', ou 't' já interfiria
+                      com 'b' ou 't' tem grau < K (e, em consequência,
+                      esse nó seria eliminado na simplificação).
+
+    - Coloração com coalescência
+
+        1. Construção do grafo de interferência
+
+        2. Enquanto houver nós "não relacionados a move" de grau < K,
+           fazemos:
+            2.1 Simplificação.
+            2.2 Coalescência.
+
+        3. Congelamento:
+           Se ainda restarem nós possivelmente coalescidos, selecione
+           um nó relacionado a move de grau < K, congele seus moves
+           (i.e., não serão deletados), torne-o "não relacionado a move"
+           e volte para o passo 2.
+
+        4. Verifica potencial transbordamento.
+
+        5. Seleciona os nós que serão transbordados.
+
+        6. Faz o transbordamento verdadeiro.
+
+        7. Repete o algoritmo.
+
+* Fusão de nós transbordados
+    - Poucos transbordamentos em máquinas com vários registradores
+      (> 20), mas normalmente muitos em máquinas com ~6 (CISC).
+
+    - Muitos transbordamentos
+        - Stack grames precisam ser maiores
+        - Pode haver muitos MOVES entre pares de temporários
+          transbordados:
+            - Operação cara (a ← b significa t → M[b_loc]; M[a_loc] → t)
+            - Potencialmente gera mais transbordamentos (por causa do
+              temporário t).
+
+    - Felizmente, muitos pares de temporários transbordados não estão
+      simultaneamente vivos.
+        - Espaço no registro de ativação pode ser alocado da mesma
+          maneira que registradores, com algoritmos de cores.
+
+    * Algoritmo de fusão de nós transbordados
+        - Efetivamente, o mesmo algoritmo de alocação de registradores.
+        - Deve ser executado ANTES de reescrever o programa para os
+          transbordos.
+
+* Nós pré-coloridos
+    - Alguns nós são pré-coloridos: representam registradores de máquina
+      (ex: frame pointer, argumento1, argumento2, ...)
+    - Codegen (de uma dada arquitetura) deve usar um só temporário
+      específico para cada um desses registradores.
+    - Para cada um desses registradores específicos teremos
+      uma cor distinta pré-alocada ao nó.
+
+    - Em uma máquina com K registradores, há K nós pré-coloridos
+      que interferem entre si.
+        - Se alguns deles não são usados explicitamente, não
+          interferem ocm outros nós não pré-coloridos.
+    - Nós pré-coloridos:
+        - Nao podem ser simplificados
+        - Não podem ser transbordados
+    - O algoritmo remove os nós até que restem apenas nós pré-coloridos.
+
+    - Com nós pré-coloridos nõa transbordam, seus tempos de vida devem
+      ser encurtados o máximo possível.
+    - O front-end do compilador pode fazr uma cópia desse registrador
+      (nó pré-colorido 'r') em um temporário 't' após sua definição
+      e recarregá-lo antes de seu uso.
+        - Se a demanda por registradores for alta, o alocador de
+          registradores fará com que 't' seja transbordado, senão
+          o fundirá com o nó 'r'.
+
+* Registradores salvos pelo chamador e pelo chamado
+    - Variáveis (ou temporários) NÃO vivas através de chamada de
+      funções devem ser alocadas em registradores caller-save,
+      pois alocá-los em registradores calee-save, geraria moves
+      desnecessários.
+
+    - Variáveis (ou temporários) que se mantenham vivas através de
+      chamadas de funções devem ser alocadas em registradores
+      callee-save, o que garante que serão salvos apenas se a nova
+      função precisar deles.
+
+    - Para garantir tratamendo correto de registradores:
+        - As funções devem manter os valore dos registradores
+          'callee-save'.
+          → Registradores 'callee-save' são considerados vivos na
+            entradas da função e usados na instrução de retorno.
+
+        - As funções podem corrompor os valore dois registradores
+          'caller-save'.
+          → As instruções CALL na linguagem deve definir todos os
+            registradores 'callee-save' (assim o alocador salva
+            os valores necessários).
